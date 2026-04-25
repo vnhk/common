@@ -5,6 +5,7 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 
 import java.time.LocalTime;
 
+@Deprecated
 public class BervanTimePicker extends HorizontalLayout implements AutoConfigurableField<LocalTime> {
     private TimePicker timePicker = new TimePicker();
     private boolean isRequired = false;

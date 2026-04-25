@@ -5,6 +5,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+@Deprecated
 public abstract class AbstractPageNotFoundErrorView extends VerticalLayout {
 
     public AbstractPageNotFoundErrorView() {

@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.UUID;
 
+@Deprecated
 public class AbstractAsyncTaskDetails extends AbstractBervanEntityView<UUID, AsyncTask> implements HasUrlParameter<String> {
     public static final String ROUTE_NAME = "/async/async-tasks/";
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "common");

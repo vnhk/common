@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+@Deprecated
 public class BervanJsonLogViewer extends VerticalLayout implements AutoConfigurableField<String> {
 
     private final ObjectMapper mapper;

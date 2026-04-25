@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@Deprecated
 public abstract class AbstractDataIEView<ID extends Serializable, T extends PersistableTableData<ID>> extends AbstractPageView {
     protected final BaseService<ID, T> dataService;
     protected final MenuNavigationComponent pageLayout;

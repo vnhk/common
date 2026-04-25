@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 public class BervanImageViewer extends VerticalLayout implements AutoConfigurableField<List<String>> {
     private List<String> imageSources = new ArrayList<>();
     private int currentIndex = 0;

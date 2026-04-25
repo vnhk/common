@@ -10,6 +10,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 
 import java.util.UUID;
 
+@Deprecated
 public class AbstractAsyncTaskList extends AbstractBervanTableView<UUID, AsyncTask> {
     public static final String ROUTE_NAME = "/async/async-tasks";
 
