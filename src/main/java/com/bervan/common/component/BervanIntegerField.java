@@ -3,6 +3,7 @@ package com.bervan.common.component;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.shared.Registration;
 
+@Deprecated
 public class BervanIntegerField extends IntegerField implements AutoConfigurableField<Integer> {
     public BervanIntegerField() {
     }

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
  * Java wrapper for the bervan-page-size-selector Lit component.
  * Provides a dropdown for selecting page size with localStorage persistence.
  */
+@Deprecated
 @Tag("bervan-page-size-selector")
 @JsModule("./src/bervan-table/bervan-page-size-selector.ts")
 public class BervanPageSizeSelector extends Component implements HasSize, HasStyle {

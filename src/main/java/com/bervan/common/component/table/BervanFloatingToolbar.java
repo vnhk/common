@@ -17,6 +17,7 @@ import java.util.function.Consumer;
  * Provides a floating action bar for bulk operations on selected items.
  * Supports standard actions (edit, export, delete) and custom actions.
  */
+@Deprecated
 @Tag("bervan-floating-toolbar")
 @JsModule("./src/bervan-table/bervan-floating-toolbar.ts")
 public class BervanFloatingToolbar extends Component implements HasSize, HasStyle {

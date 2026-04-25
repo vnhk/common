@@ -3,6 +3,7 @@ package com.bervan.common.component;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.shared.Registration;
 
+@Deprecated
 public class BervanBooleanField extends Checkbox implements AutoConfigurableField<Boolean> {
     public BervanBooleanField(String label, boolean isRequired) {
         this.setLabel(label);

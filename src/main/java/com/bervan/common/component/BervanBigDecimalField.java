@@ -5,6 +5,7 @@ import com.vaadin.flow.shared.Registration;
 
 import java.math.BigDecimal;
 
+@Deprecated
 public class BervanBigDecimalField extends BigDecimalField implements AutoConfigurableField<BigDecimal> {
     public BervanBigDecimalField() {
     }

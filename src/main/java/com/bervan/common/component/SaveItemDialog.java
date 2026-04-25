@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 
+@Deprecated
 public class SaveItemDialog<ID extends Serializable, T extends PersistableData<ID>> extends AbstractPageView {
     protected final ComponentHelper<ID, T> componentHelper;
     protected final BaseService<ID, T> service;

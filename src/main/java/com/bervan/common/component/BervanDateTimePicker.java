@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@Deprecated
 public class BervanDateTimePicker extends HorizontalLayout implements AutoConfigurableField<LocalDateTime> {
     private DatePicker datePicker = new DatePicker();
     private TimePicker timePicker = new TimePicker();

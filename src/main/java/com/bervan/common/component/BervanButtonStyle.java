@@ -1,5 +1,6 @@
 package com.bervan.common.component;
 
+@Deprecated
 public enum BervanButtonStyle {
     PRIMARY("option-button-primary"), SECONDARY("option-button-secondary"), WARNING("option-button-warning");
 

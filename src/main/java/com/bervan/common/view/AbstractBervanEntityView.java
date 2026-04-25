@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
+@Deprecated
 public abstract class AbstractBervanEntityView<ID extends Serializable, T extends PersistableData<ID>> extends AbstractPageView {
     protected final List<T> data = new LinkedList<>();
     protected final BaseService<ID, T> service;

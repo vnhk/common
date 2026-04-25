@@ -3,6 +3,7 @@ package com.bervan.common.component;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.shared.Registration;
 
+@Deprecated
 public class BervanDoubleField extends NumberField implements AutoConfigurableField<Double> {
     public BervanDoubleField() {
     }

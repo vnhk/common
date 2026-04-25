@@ -5,6 +5,7 @@ import com.vaadin.flow.shared.Registration;
 
 import java.util.Collection;
 
+@Deprecated
 public class BervanComboBox<T> extends ComboBox<T> implements AutoConfigurableField<T> {
     public BervanComboBox(int pageSize) {
         super(pageSize);

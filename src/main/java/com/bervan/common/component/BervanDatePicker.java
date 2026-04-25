@@ -7,6 +7,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.time.LocalDate;
 
+@Deprecated
 public class BervanDatePicker extends HorizontalLayout implements AutoConfigurableField<LocalDate> {
     private DatePicker datePicker = new DatePicker();
     private boolean isRequired = false;

@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 @CssImport("./bervan-navigation.css")
 public abstract class MenuNavigationComponent extends VerticalLayout {
     protected final Map<String, Button> buttons = new HashMap<>();

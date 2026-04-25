@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 
 import static com.bervan.common.TableClassUtils.buildColumnConfig;
 
+@Deprecated
 @CssImport("./bervan-glassmorphism.css")
 @CssImport("./bervan-table.css")
 @CssImport("./bervan-toolbar.css")

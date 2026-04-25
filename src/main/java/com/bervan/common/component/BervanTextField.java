@@ -3,6 +3,7 @@ package com.bervan.common.component;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.shared.Registration;
 
+@Deprecated
 public class BervanTextField extends TextField implements AutoConfigurableField<String> {
     public BervanTextField() {
     }
