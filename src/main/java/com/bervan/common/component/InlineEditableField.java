@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
+@Deprecated
 public class InlineEditableField extends Div {
 
     public enum FieldType {

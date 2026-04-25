@@ -12,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
+@Deprecated
 public class WysiwygTextArea extends AbstractPageView implements AutoConfigurableField<String> {
     private final String id;
     private String value;

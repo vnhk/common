@@ -12,6 +12,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import java.util.List;
 import java.util.Optional;
 
+@Deprecated
 public abstract class AbstractOneValueView extends AbstractPageView {
     protected final BaseOneValueService service;
     protected final MenuNavigationComponent pageLayout;

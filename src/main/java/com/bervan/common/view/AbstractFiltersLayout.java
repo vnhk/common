@@ -33,6 +33,7 @@ import java.util.function.Consumer;
 
 import static com.bervan.common.TableClassUtils.buildColumnConfig;
 
+@Deprecated
 public class AbstractFiltersLayout<ID extends Serializable, T extends PersistableTableData<ID>> extends AbstractPageView {
     protected final Button applyFiltersButton;
     @Getter

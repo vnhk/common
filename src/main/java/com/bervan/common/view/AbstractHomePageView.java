@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.List;
 
+@Deprecated
 public abstract class AbstractHomePageView extends VerticalLayout {
 
     public AbstractHomePageView() {
