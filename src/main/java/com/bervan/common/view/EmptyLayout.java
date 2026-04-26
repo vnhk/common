@@ -2,6 +2,7 @@ package com.bervan.common.view;
 
 import com.bervan.common.MenuNavigationComponent;
 
+@Deprecated
 public class EmptyLayout extends MenuNavigationComponent {
 
     public EmptyLayout(String currentRouteName) {

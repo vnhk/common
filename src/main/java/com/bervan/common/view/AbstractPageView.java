@@ -22,6 +22,7 @@ import io.micrometer.common.util.StringUtils;
 import java.util.List;
 import java.util.Objects;
 
+@Deprecated
 public abstract class AbstractPageView extends VerticalLayout {
     public AbstractPageView() {
         addClassName("bervan-page");

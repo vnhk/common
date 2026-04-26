@@ -6,6 +6,7 @@ import java.io.Serializable;
  * Enhanced column configuration for BervanTable modern features.
  * Extends beyond basic column settings to support pinning, visibility, sorting, and filtering.
  */
+@Deprecated
 public class ColumnConfig implements Serializable {
 
     private final String key;

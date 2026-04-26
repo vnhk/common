@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static com.bervan.common.view.AbstractPageView.createSearchSection;
 
+@Deprecated
 public class TableClassUtils {
     public static ClassViewAutoConfigColumn buildColumnConfig(Field field, BervanViewConfig bervanViewConfig) {
         return bervanViewConfig.getFieldConfig(field);

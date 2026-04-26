@@ -19,6 +19,7 @@ import java.util.List;
  *     .build();
  * </pre>
  */
+@Deprecated
 public class BervanTableConfig implements Serializable {
 
     // Feature flags - all default to false for backward compatibility

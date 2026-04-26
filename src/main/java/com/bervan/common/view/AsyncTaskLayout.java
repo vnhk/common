@@ -3,6 +3,7 @@ package com.bervan.common.view;
 import com.bervan.common.MenuNavigationComponent;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
+@Deprecated
 public class AsyncTaskLayout extends MenuNavigationComponent {
     public AsyncTaskLayout(String currentRouteName, boolean details) {
         super(currentRouteName);

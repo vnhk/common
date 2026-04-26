@@ -14,6 +14,7 @@ import java.util.function.Consumer;
  * Manages state persistence for BervanTable using browser localStorage.
  * Stores page size, column visibility, column order, and sort state.
  */
+@Deprecated
 public class BervanTableState implements Serializable {
 
     private final String tableId;
