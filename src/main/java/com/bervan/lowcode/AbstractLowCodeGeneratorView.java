@@ -8,6 +8,7 @@ import com.bervan.common.view.AbstractBervanTableView;
 import java.util.List;
 import java.util.UUID;
 
+@Deprecated
 public class AbstractLowCodeGeneratorView extends AbstractBervanTableView<UUID, LowCodeClass> {
     public static final String ROUTE_NAME = "/lowcode-generator";
 

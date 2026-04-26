@@ -3,6 +3,7 @@ package com.bervan.common.component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 
+@Deprecated
 public class BervanJsonLogController extends VerticalLayout implements AutoConfigurableField<String> {
     private final BervanJsonLogViewer viewer;
 

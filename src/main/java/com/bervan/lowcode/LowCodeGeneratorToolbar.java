@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
+@Deprecated
 public class LowCodeGeneratorToolbar extends BervanTableToolbar<UUID, LowCodeClass> {
     private BervanButton runGeneratorButton;
     private BervanFloatingToolbar floatingToolbar;

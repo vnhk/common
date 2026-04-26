@@ -5,6 +5,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import java.util.List;
 
 
+@Deprecated
 public class BervanImageController extends VerticalLayout implements AutoConfigurableField<List<String>> {
     private final BervanImageViewer viewer;
 

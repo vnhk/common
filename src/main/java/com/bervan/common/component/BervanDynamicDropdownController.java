@@ -7,6 +7,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.List;
 
+@Deprecated
 public class BervanDynamicDropdownController extends VerticalLayout implements AutoConfigurableField<String> {
     public final String key;
     private final ComboBox<String> comboBox;

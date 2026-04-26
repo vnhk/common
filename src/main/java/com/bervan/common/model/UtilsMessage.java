@@ -1,5 +1,6 @@
 package com.bervan.common.model;
 
+@Deprecated
 public class UtilsMessage {
     public String message;
     public boolean isSuccess;
