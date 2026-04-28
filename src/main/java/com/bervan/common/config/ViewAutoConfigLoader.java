@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class ViewAutoConfigLoader {
             if (filename != null) {
                 ClassViewAutoConfig config = mapper.readValue(resource.getInputStream(), ClassViewAutoConfig.class);
                 String className = filename.replace(".yml", "");
-                configs.put(className, new HashMap<>());
+                configs.put(className, new LinkedHashMap<>());
                 config.getColumns().forEach(column -> configs.get(className).put(column.getField(), column));
             }
         }
