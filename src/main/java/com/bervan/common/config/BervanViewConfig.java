@@ -4,7 +4,6 @@ import com.bervan.common.component.CommonComponentUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,6 +62,11 @@ public class BervanViewConfig extends HashMap<String, Map<String, ClassViewAutoC
         return getFieldNames(field.getDeclaringClass()).contains(field.getName());
     }
 
+//
+//    public DataType getDataType(Field field) {
+
+    ////        field
+//    }
     public String getInternalName(Field field) {
         Class<?> declaringClass = field.getDeclaringClass();
         for (ClassViewAutoConfigColumn config : get(declaringClass.getSimpleName()).values()) {

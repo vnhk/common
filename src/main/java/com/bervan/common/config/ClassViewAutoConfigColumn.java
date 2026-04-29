@@ -28,6 +28,7 @@ public class ClassViewAutoConfigColumn {
     private boolean sortable; // needs to be updated in yaml file!
     private Integer min;
     private Integer max;
+    private String dataType = ColumnDataType.TEXT.toString();
 
     public Integer getMin() {
         if (min == null) {
