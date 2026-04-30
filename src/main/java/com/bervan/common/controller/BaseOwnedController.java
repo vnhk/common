@@ -3,6 +3,7 @@ package com.bervan.common.controller;
 import com.bervan.common.config.EntityConfigValidator;
 import com.bervan.common.mapper.BervanDTOMapper;
 import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.common.search.SearchRequest;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BaseDTO;
 import com.bervan.core.model.BaseModel;
@@ -110,6 +111,16 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         return ResponseEntity.ok(new PageImpl<>(dtos, PageRequest.of(page, size), total));
     }
 
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<Page<DTO>> load(SearchRequest request, int page, int size, Class<DTO> dtoClass) {
+        Set<T> loaded = service.load(request, PageRequest.of(page, size));
+        List<DTO> dtos = loaded.stream()
+                .map(p -> mapper.map(p, dtoClass))
+                .toList();
+        int total = Math.toIntExact(service.loadCount(request));
+        int fromIndex = Math.min(page * size, total);
+        int toIndex = Math.min(fromIndex + size, total);
+        return ResponseEntity.ok(new PageImpl<>(dtos, PageRequest.of(page, size), total));
+    }
 
     record ValidationErrorResponse(List<EntityConfigValidator.FieldError> errors) {
     }
