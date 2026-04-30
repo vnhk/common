@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -42,12 +44,51 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> create(DTO req) {
         T model = (T) mapper.map(req);
-        List<EntityConfigValidator.FieldError> errors = validator.validate(entityName, model);
+        List<EntityConfigValidator.FieldError> errors = validator.validateCreate(entityName, model);
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(errors));
         }
 
         T saved = service.save(model);
+        return ResponseEntity.ok(toDto(saved, req.getClass()));
+    }
+
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<?> update(DTO req) {
+        if (req.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Optional<T> match = service.loadById(req.getId());
+        if (match.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        T original = match.get();
+        T model = (T) mapper.map(req);
+
+        List<EntityConfigValidator.FieldError> errors = validator.validateUpdate(entityName, model);
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ValidationErrorResponse(errors));
+        }
+
+        Field[] declaredFields = model.getClass().getDeclaredFields();
+        for (Field field : declaredFields) {
+            field.setAccessible(true);
+            Object value = null;
+            try {
+                value = field.get(model);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                field.set(original, value);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        original.setModificationDate(LocalDateTime.now());
+        T saved = service.save(original);
         return ResponseEntity.ok(toDto(saved, req.getClass()));
     }
 

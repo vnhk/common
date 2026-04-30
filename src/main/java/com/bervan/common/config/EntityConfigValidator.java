@@ -19,7 +19,7 @@ public class EntityConfigValidator {
         this.viewConfig = viewConfig;
     }
 
-    public <ID extends Serializable> List<FieldError> validate(String entityName, BaseModel<ID> model) {
+    public <ID extends Serializable> List<FieldError> validateCreate(String entityName, BaseModel<ID> model) {
         Map<String, Object> fields = new HashMap<>();
         Field[] declaredFields = model.getClass().getDeclaredFields();
         for (Field field : declaredFields) {
@@ -30,6 +30,23 @@ public class EntityConfigValidator {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
+            fields.put(field.getName(), value);
+        }
+        return validate(entityName, fields);
+    }
+
+    public <ID extends Serializable> List<FieldError> validateUpdate(String entityName, BaseModel<ID> model) {
+        Map<String, Object> fields = new HashMap<>();
+        Field[] declaredFields = model.getClass().getDeclaredFields();
+        for (Field field : declaredFields) {
+            field.setAccessible(true);
+            Object value = null;
+            try {
+                value = field.get(model);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            if (value == null) continue; // Skip null values for update it will not be updated
             fields.put(field.getName(), value);
         }
         return validate(entityName, fields);
