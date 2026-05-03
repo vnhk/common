@@ -1,5 +1,5 @@
 package com.bervan.common.config;
 
 public enum ColumnDataType {
-    TEXT, NUMBER
+    TEXT, NUMBER, DATE, BOOLEAN, DATETIME
 }
