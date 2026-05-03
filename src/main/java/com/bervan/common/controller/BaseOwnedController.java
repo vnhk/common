@@ -71,6 +71,10 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
     }
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> create(DTO req) {
+        return create(req, req.getClass());
+    }
+
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<?> create(DTO req, Class<? extends DTO> resDTOClass) {
         T model = (T) mapper.map(req);
         List<EntityConfigValidator.FieldError> errors = validator.validateAll(entityName, model);
         if (!errors.isEmpty()) {
@@ -78,7 +82,7 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         }
 
         T saved = service.save(model);
-        return ResponseEntity.ok(toDto(saved, req.getClass()));
+        return ResponseEntity.ok(toDto(saved, resDTOClass));
     }
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> update(DTO req) {
