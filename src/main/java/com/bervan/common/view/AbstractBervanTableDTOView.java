@@ -40,7 +40,7 @@ public abstract class AbstractBervanTableDTOView<ID extends Serializable, T exte
             this.data.removeAll(this.data);
             List<T> loadedData = loadData();
             List<T> converted = new ArrayList<>();
-            DTOMapper dtoMapper = new DTOMapper(new ArrayList<>());
+            DTOMapper dtoMapper = new DTOMapper(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             for (T d : loadedData) {
                 converted.add((T) dtoMapper.map(((BaseModel) d), dtoClass));
             }
@@ -153,7 +153,7 @@ public abstract class AbstractBervanTableDTOView<ID extends Serializable, T exte
     @Override
     protected T preSaveActions(T newItem) {
         try {
-            DTOMapper dtoMapper = new DTOMapper(new ArrayList<>());
+            DTOMapper dtoMapper = new DTOMapper(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
             return (T) dtoMapper.map(((BaseDTO) newItem));
         } catch (Exception e) {
             throw new RuntimeException(e);

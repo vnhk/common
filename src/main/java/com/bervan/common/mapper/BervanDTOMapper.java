@@ -1,13 +1,10 @@
 package com.bervan.common.mapper;
 
-import com.bervan.core.model.BaseDTO;
-import com.bervan.core.model.BaseModel;
-import com.bervan.core.model.DefaultCustomMapper;
+import com.bervan.core.model.*;
 import com.bervan.core.service.DTOMapper;
 import com.bervan.logging.JsonLogger;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -16,10 +13,14 @@ public class BervanDTOMapper {
     private final DTOMapper mapper;
 
     private final List<? extends DefaultCustomMapper> customMappers;
+    private final List<? extends PreMapper> preMappers;
+    private final List<? extends PostMapper> postMappers;
 
-    public BervanDTOMapper(List<? extends DefaultCustomMapper> customMappers) {
+    public BervanDTOMapper(List<? extends DefaultCustomMapper> customMappers, List<? extends PreMapper> preMappers, List<? extends PostMapper> postMappers) {
         this.customMappers = customMappers;
-        mapper = new DTOMapper(customMappers);
+        this.preMappers = preMappers;
+        this.postMappers = postMappers;
+        mapper = new DTOMapper(customMappers, preMappers, postMappers);
     }
 
     public <ID, T extends BaseDTO<ID>> T map(BaseModel<ID> dtoTarget, Class<? extends T> dtoClass) throws RuntimeException {
