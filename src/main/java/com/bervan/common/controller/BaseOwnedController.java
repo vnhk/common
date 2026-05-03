@@ -14,10 +14,13 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & BaseModel<ID>, ID extends Serializable> {
 
@@ -33,6 +36,30 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         this.entityName = entityName;
     }
 
+    private <DTO extends BaseDTO<ID>> List<Field> getModelFieldsUsedInDto(Class<?> modelClass, DTO dto) {
+        try {
+            Set<String> dtoFields = Arrays.stream(dto.getClass().getDeclaredFields())
+                    .filter(field -> !field.getName().equals("id"))
+                    .filter(field -> {
+                        int mod = field.getModifiers();
+                        return !Modifier.isStatic(mod) && !Modifier.isFinal(mod);
+                    }).map(e -> e.getName())
+                    .collect(Collectors.toSet());
+
+            List<Field> modelFields = Arrays.stream(modelClass.getDeclaredFields())
+                    .filter(field -> {
+                        int mod = field.getModifiers();
+                        return !Modifier.isStatic(mod) && !Modifier.isFinal(mod);
+                    })
+                    .filter(e -> dtoFields.contains(e.getName()))
+                    .collect(Collectors.toList());
+
+            return modelFields;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected <DTO extends BaseDTO<ID>> ResponseEntity<DTO> getById(ID id, Class<DTO> dtoClass) {
         return service.loadById(id)
                 .map(i -> ResponseEntity.ok(toDto(i, dtoClass)))
@@ -45,7 +72,7 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> create(DTO req) {
         T model = (T) mapper.map(req);
-        List<EntityConfigValidator.FieldError> errors = validator.validateCreate(entityName, model);
+        List<EntityConfigValidator.FieldError> errors = validator.validateAll(entityName, model);
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(errors));
         }
@@ -66,17 +93,57 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         T original = match.get();
         T model = (T) mapper.map(req);
 
-        List<EntityConfigValidator.FieldError> errors = validator.validateUpdate(entityName, model);
+        List<EntityConfigValidator.FieldError> errors = validator.validateAll(entityName, model);
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(new ValidationErrorResponse(errors));
         }
 
-        Field[] declaredFields = model.getClass().getDeclaredFields();
+        List<Field> declaredFields = getModelFieldsUsedInDto(model.getClass(), req);
         for (Field field : declaredFields) {
             field.setAccessible(true);
             Object value = null;
             try {
                 value = field.get(model);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+
+            try {
+                field.set(original, value);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        original.setModificationDate(LocalDateTime.now());
+        T saved = service.save(original);
+        return ResponseEntity.ok(toDto(saved, req.getClass()));
+    }
+
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<?> patchUpdate(DTO req) {
+        if (req.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Optional<T> match = service.loadById(req.getId());
+        if (match.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        T original = match.get();
+        T model = (T) mapper.map(req);
+
+        List<EntityConfigValidator.FieldError> errors = validator.validateNotNull(entityName, model);
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ValidationErrorResponse(errors));
+        }
+
+        List<Field> declaredFields = getModelFieldsUsedInDto(model.getClass(), req);
+        for (Field field : declaredFields) {
+            field.setAccessible(true);
+            Object value = null;
+            try {
+                value = field.get(model);
+                if (value == null) continue;
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }

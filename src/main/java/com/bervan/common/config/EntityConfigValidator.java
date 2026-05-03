@@ -19,7 +19,7 @@ public class EntityConfigValidator {
         this.viewConfig = viewConfig;
     }
 
-    public <ID extends Serializable> List<FieldError> validateCreate(String entityName, BaseModel<ID> model) {
+    public <ID extends Serializable> List<FieldError> validateAll(String entityName, BaseModel<ID> model) {
         Map<String, Object> fields = new HashMap<>();
         Field[] declaredFields = model.getClass().getDeclaredFields();
         for (Field field : declaredFields) {
@@ -35,7 +35,7 @@ public class EntityConfigValidator {
         return validate(entityName, fields);
     }
 
-    public <ID extends Serializable> List<FieldError> validateUpdate(String entityName, BaseModel<ID> model) {
+    public <ID extends Serializable> List<FieldError> validateNotNull(String entityName, BaseModel<ID> model) {
         Map<String, Object> fields = new HashMap<>();
         Field[] declaredFields = model.getClass().getDeclaredFields();
         for (Field field : declaredFields) {

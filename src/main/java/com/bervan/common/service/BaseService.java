@@ -114,6 +114,7 @@ public abstract class BaseService<ID extends Serializable, T extends Persistable
         return new HashSet<>(search.getResultList());
     }
 
+    //to do - it should load related entities
     public Optional<T> loadById(ID id) {
         SearchRequest request = new SearchRequest();
         request.addIdEqualsCriteria("ID_GROUP", entityType, id);

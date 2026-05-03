@@ -7,16 +7,16 @@ import com.bervan.common.search.model.SortDirection;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.Persistable;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
+import org.hibernate.Hibernate;
 import org.hibernate.internal.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -54,6 +54,7 @@ public class SearchService {
         criteriaBuilder = entityManager.getCriteriaBuilder();
     }
 
+    @Transactional
     public <T extends Persistable> SearchResponse<T> search(SearchRequest searchRequest, SearchQueryOption options) {
         try {
             init();
@@ -97,6 +98,15 @@ public class SearchService {
                 resultQuery.setFirstResult(pageSize * (page));
                 resultQuery.setMaxResults(pageSize);
                 resultList = resultQuery.getResultList();
+            }
+
+            // Eagerly initialize all JPA relationships for each result entity.
+            // Uses an IdentityHashMap-based visited set (compares by == not equals) so
+            // Hibernate's first-level cache guarantees the same object instance is returned
+            // for the same DB row within a session — cycle detection is exact, no false positives.
+            if (options.getColumnsToFetch() == null || options.getColumnsToFetch().isEmpty()) {
+                Set<Object> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+                resultList.forEach(entity -> initializeRelationships(entity, visited));
             }
 
             if (options.getColumnsToFetch() != null && !options.getColumnsToFetch().isEmpty()) {
@@ -384,5 +394,49 @@ public class SearchService {
                 .filter(e -> ((Enum) e).name().equals(value))
                 .findFirst();
         return (Enum) el.orElse(null);
+    }
+
+    /**
+     * Recursively initializes all JPA relationship fields of an entity.
+     * The visited set uses identity comparison (==) via IdentityHashMap, which is correct
+     * because Hibernate's first-level cache returns the same object instance for the same
+     * entity within a session — so a Task referenced from two different TaskRelations is
+     * the exact same Java object, and visited.add() returns false on the second visit.
+     */
+    private void initializeRelationships(Object entity, Set<Object> visited) {
+        if (entity == null || !visited.add(entity)) {
+            return;
+        }
+
+        Class<?> clazz = entity.getClass();
+        while (clazz != null && clazz != Object.class) {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (!isJpaRelationshipField(field)) {
+                    continue;
+                }
+                field.setAccessible(true);
+                try {
+                    Object value = field.get(entity);
+                    Hibernate.initialize(value);
+                    if (value instanceof Iterable<?> items) {
+                        for (Object item : items) {
+                            initializeRelationships(item, visited);
+                        }
+                    } else if (value != null) {
+                        initializeRelationships(value, visited);
+                    }
+                } catch (IllegalAccessException e) {
+                    log.warn("Could not initialize field {}.{}", clazz.getSimpleName(), field.getName());
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+    }
+
+    private boolean isJpaRelationshipField(Field field) {
+        return field.isAnnotationPresent(OneToMany.class)
+                || field.isAnnotationPresent(ManyToOne.class)
+                || field.isAnnotationPresent(ManyToMany.class)
+                || field.isAnnotationPresent(OneToOne.class);
     }
 }
