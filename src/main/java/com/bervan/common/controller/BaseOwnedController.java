@@ -7,6 +7,7 @@ import com.bervan.common.search.SearchRequest;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BaseDTO;
 import com.bervan.core.model.BaseModel;
+import com.bervan.logging.JsonLogger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +29,7 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
     protected final BervanDTOMapper mapper;
     protected final EntityConfigValidator validator;
     private final String entityName;
+    private final JsonLogger log = JsonLogger.getLogger(getClass(), "common");
 
     protected BaseOwnedController(BaseService<ID, T> service, BervanDTOMapper mapper, EntityConfigValidator validator, String entityName) {
         this.service = service;
@@ -75,6 +77,7 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
     }
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> create(DTO req, Class<? extends DTO> resDTOClass) {
+        log.debug("Creating entity: {}", req.getClass().getSimpleName());
         T model = (T) mapper.map(req);
         List<EntityConfigValidator.FieldError> errors = validator.validateAll(entityName, model);
         if (!errors.isEmpty()) {
@@ -82,10 +85,12 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         }
 
         T saved = service.save(model);
+        log.debug("Entity created: {}", saved.getClass().getSimpleName());
         return ResponseEntity.ok(toDto(saved, resDTOClass));
     }
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> update(DTO req) {
+        log.debug("Updating entity: {}", req.getClass().getSimpleName());
         if (req.getId() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -121,10 +126,12 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
 
         original.setModificationDate(LocalDateTime.now());
         T saved = service.save(original);
+        log.debug("Entity updated: {}", saved.getClass().getSimpleName());
         return ResponseEntity.ok(toDto(saved, req.getClass()));
     }
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<?> patchUpdate(DTO req) {
+        log.debug("Patch updating entity: {}", req.getClass().getSimpleName());
         if (req.getId() == null) {
             return ResponseEntity.badRequest().build();
         }
@@ -161,17 +168,21 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
 
         original.setModificationDate(LocalDateTime.now());
         T saved = service.save(original);
+        log.debug("Entity updated: {}", saved.getClass().getSimpleName());
         return ResponseEntity.ok(toDto(saved, req.getClass()));
     }
 
     protected ResponseEntity<?> delete(ID id) {
+        log.debug("Deleting entity: {}", id);
         Optional<T> match = service.loadById(id);
         if (match.isEmpty()) return ResponseEntity.notFound().build();
         service.delete(match.get());
+        log.debug("Entity deleted: {}", id);
         return ResponseEntity.noContent().build();
     }
 
     protected <DTO extends BaseDTO<ID>> ResponseEntity<Page<DTO>> load(int page, int size, Class<DTO> dtoClass) {
+        log.debug("Loading entities");
         Set<T> loaded = service.load(PageRequest.of(page, size));
         List<DTO> dtos = loaded.stream()
                 .map(p -> mapper.map(p, dtoClass))
@@ -179,6 +190,7 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         int total = Math.toIntExact(service.loadCount());
         int fromIndex = Math.min(page * size, total);
         int toIndex = Math.min(fromIndex + size, total);
+        log.debug("Entities loaded: {} - {}", fromIndex, toIndex);
         return ResponseEntity.ok(new PageImpl<>(dtos, PageRequest.of(page, size), total));
     }
 
