@@ -85,6 +85,11 @@ public class EntityConfigValidator {
         return errors;
     }
 
+    public Map<String, ClassViewAutoConfigColumn> getEntityConfig(String entityName) {
+        Map<String, ClassViewAutoConfigColumn> config = viewConfig.get(entityName);
+        return config != null ? config : java.util.Collections.emptyMap();
+    }
+
     public record FieldError(String field, String message) {
     }
 }

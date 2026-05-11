@@ -1,9 +1,12 @@
 package com.bervan.common.controller;
 
+import com.bervan.common.config.ClassViewAutoConfigColumn;
 import com.bervan.common.config.EntityConfigValidator;
 import com.bervan.common.mapper.BervanDTOMapper;
 import com.bervan.common.model.BervanOwnedBaseEntity;
 import com.bervan.common.search.SearchRequest;
+import com.bervan.common.search.model.Operator;
+import com.bervan.common.search.model.SearchOperation;
 import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BaseDTO;
 import com.bervan.core.model.BaseModel;
@@ -12,13 +15,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -203,6 +210,163 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         int fromIndex = Math.min(page * size, total);
         int toIndex = Math.min(fromIndex + size, total);
         return ResponseEntity.ok(new PageImpl<>(dtos, PageRequest.of(page, size), total));
+    }
+
+    protected SearchRequest buildSearchRequest(MultiValueMap<String, String> allParams, Class<?> entityClass) {
+        SearchRequest request = new SearchRequest();
+        if (allParams == null || allParams.isEmpty()) return request;
+
+        Map<String, ClassViewAutoConfigColumn> config = validator.getEntityConfig(entityName);
+        if (config.isEmpty()) return request;
+
+        String globalFilter = allParams.getFirst("filter");
+
+        for (Map.Entry<String, ClassViewAutoConfigColumn> entry : config.entrySet()) {
+            String fieldName = entry.getKey();
+            ClassViewAutoConfigColumn col = entry.getValue();
+            if (!col.isFilterable()) continue;
+
+            Field field = findEntityField(entityClass, fieldName);
+
+            boolean hasPredefinedValues =
+                    (col.getStrValues() != null && !col.getStrValues().isEmpty()) ||
+                    (col.getIntValues() != null && !col.getIntValues().isEmpty()) ||
+                    col.isDynamicStrValues();
+
+            if (globalFilter != null && !globalFilter.isBlank() && !hasPredefinedValues
+                    && field != null && String.class.equals(field.getType())) {
+                request.addCriterion("TEXT_FILTER_GROUP", Operator.OR_OPERATOR, entityClass,
+                        fieldName, SearchOperation.LIKE_OPERATION, "%" + globalFilter + "%");
+            }
+
+            if (hasPredefinedValues) {
+                List<String> values = allParams.get(fieldName);
+                if (values != null && !values.isEmpty()) {
+                    String groupId = "SELECT_FILTER_" + fieldName.toUpperCase() + "_GROUP";
+                    for (String val : values) {
+                        if (val != null && !val.isBlank()) {
+                            Object typedVal = parseTypedFilterValue(val, field);
+                            request.addCriterion(groupId, Operator.OR_OPERATOR, entityClass,
+                                    fieldName, SearchOperation.EQUALS_OPERATION, typedVal);
+                        }
+                    }
+                }
+                continue;
+            }
+
+            if (field == null) continue;
+            Class<?> ft = field.getType();
+
+            if (LocalDateTime.class.equals(ft)) {
+                applyDateRangeFilter(request, allParams, entityClass, fieldName, true);
+            } else if (LocalDate.class.equals(ft)) {
+                applyDateRangeFilter(request, allParams, entityClass, fieldName, false);
+            } else if (isNumericFieldType(ft)) {
+                applyNumericRangeFilter(request, allParams, entityClass, fieldName, ft);
+            } else if (Boolean.class.equals(ft) || boolean.class.equals(ft)) {
+                String val = allParams.getFirst(fieldName);
+                if (val != null && !val.isBlank()) {
+                    request.addCriterion("BOOL_FILTER_" + fieldName.toUpperCase() + "_GROUP",
+                            entityClass, fieldName, SearchOperation.EQUALS_OPERATION,
+                            Boolean.parseBoolean(val));
+                }
+            } else if (String.class.equals(ft)) {
+                String val = allParams.getFirst(fieldName);
+                if (val != null && !val.isBlank()) {
+                    request.addCriterion("TEXT_FIELD_" + fieldName.toUpperCase() + "_GROUP",
+                            entityClass, fieldName, SearchOperation.LIKE_OPERATION,
+                            "%" + val + "%");
+                }
+            }
+        }
+        return request;
+    }
+
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<Page<DTO>> search(
+            MultiValueMap<String, String> allParams, int page, int size,
+            Class<DTO> dtoClass, Class<?> entityClass) {
+        return load(buildSearchRequest(allParams, entityClass), page, size, dtoClass);
+    }
+
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<Page<DTO>> search(
+            SearchRequest baseRequest, MultiValueMap<String, String> allParams,
+            int page, int size, Class<DTO> dtoClass, Class<?> entityClass) {
+        baseRequest.merge(buildSearchRequest(allParams, entityClass));
+        return load(baseRequest, page, size, dtoClass);
+    }
+
+    private Field findEntityField(Class<?> clazz, String name) {
+        Class<?> c = clazz;
+        while (c != null && !c.equals(Object.class)) {
+            try { return c.getDeclaredField(name); } catch (NoSuchFieldException e) { c = c.getSuperclass(); }
+        }
+        return null;
+    }
+
+    private boolean isNumericFieldType(Class<?> t) {
+        return Integer.class.equals(t) || int.class.equals(t) ||
+               Long.class.equals(t) || long.class.equals(t) ||
+               Double.class.equals(t) || double.class.equals(t) ||
+               Float.class.equals(t) || float.class.equals(t) ||
+               BigDecimal.class.equals(t);
+    }
+
+    private void applyDateRangeFilter(SearchRequest req, MultiValueMap<String, String> params,
+                                       Class<?> entityClass, String fieldName, boolean isDateTime) {
+        String from = params.getFirst(fieldName + "_from");
+        String to = params.getFirst(fieldName + "_to");
+        String groupId = "RANGE_" + fieldName.toUpperCase() + "_GROUP";
+        if (from != null && !from.isBlank()) {
+            Object val = parseDateValue(from, isDateTime);
+            if (val != null) req.addCriterion(groupId, entityClass, fieldName, SearchOperation.GREATER_EQUAL_OPERATION, val);
+        }
+        if (to != null && !to.isBlank()) {
+            Object val = parseDateValue(to, isDateTime);
+            if (val != null) req.addCriterion(groupId, entityClass, fieldName, SearchOperation.LESS_EQUAL_OPERATION, val);
+        }
+    }
+
+    private void applyNumericRangeFilter(SearchRequest req, MultiValueMap<String, String> params,
+                                          Class<?> entityClass, String fieldName, Class<?> fieldType) {
+        String from = params.getFirst(fieldName + "_from");
+        String to = params.getFirst(fieldName + "_to");
+        String groupId = "RANGE_" + fieldName.toUpperCase() + "_GROUP";
+        try {
+            if (from != null && !from.isBlank())
+                req.addCriterion(groupId, entityClass, fieldName, SearchOperation.GREATER_EQUAL_OPERATION, parseNumericValue(from, fieldType));
+            if (to != null && !to.isBlank())
+                req.addCriterion(groupId, entityClass, fieldName, SearchOperation.LESS_EQUAL_OPERATION, parseNumericValue(to, fieldType));
+        } catch (NumberFormatException ignored) {}
+    }
+
+    private Object parseDateValue(String value, boolean isDateTime) {
+        try {
+            if (isDateTime) {
+                String v = value.length() == 16 ? value + ":00" : value;
+                return LocalDateTime.parse(v);
+            } else {
+                return LocalDate.parse(value.length() > 10 ? value.substring(0, 10) : value);
+            }
+        } catch (Exception e) { return null; }
+    }
+
+    private Object parseNumericValue(String value, Class<?> fieldType) {
+        if (Integer.class.equals(fieldType) || int.class.equals(fieldType)) return Integer.parseInt(value);
+        if (Long.class.equals(fieldType) || long.class.equals(fieldType)) return Long.parseLong(value);
+        if (Float.class.equals(fieldType) || float.class.equals(fieldType)) return Float.parseFloat(value);
+        if (BigDecimal.class.equals(fieldType)) return new BigDecimal(value);
+        return Double.parseDouble(value);
+    }
+
+    private Object parseTypedFilterValue(String value, Field field) {
+        if (field == null) return value;
+        Class<?> t = field.getType();
+        try {
+            if (Integer.class.equals(t) || int.class.equals(t)) return Integer.parseInt(value);
+            if (Long.class.equals(t) || long.class.equals(t)) return Long.parseLong(value);
+            if (Boolean.class.equals(t) || boolean.class.equals(t)) return Boolean.parseBoolean(value);
+        } catch (NumberFormatException ignored) {}
+        return value;
     }
 
     record ValidationErrorResponse(List<EntityConfigValidator.FieldError> errors) {
