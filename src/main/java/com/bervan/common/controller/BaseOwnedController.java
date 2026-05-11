@@ -11,11 +11,18 @@ import com.bervan.common.service.BaseService;
 import com.bervan.core.model.BaseDTO;
 import com.bervan.core.model.BaseModel;
 import com.bervan.logging.JsonLogger;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -23,6 +30,7 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +45,9 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
     protected final EntityConfigValidator validator;
     private final String entityName;
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "common");
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     protected BaseOwnedController(BaseService<ID, T> service, BervanDTOMapper mapper, EntityConfigValidator validator, String entityName) {
         this.service = service;
@@ -369,6 +380,49 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         return value;
     }
 
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<byte[]> exportAll(Class<DTO> dtoClass, String filenamePrefix) {
+        try {
+            Set<T> all = service.load(PageRequest.of(0, 100_000));
+            List<DTO> dtos = all.stream().map(e -> mapper.map(e, dtoClass)).toList();
+            byte[] data = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(dtos);
+            String filename = filenamePrefix + "-export-" + LocalDate.now() + ".json";
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(data);
+        } catch (Exception e) {
+            log.error("Export failed: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<ImportResult> importAll(MultipartFile file, Class<DTO> dtoClass) {
+        int imported = 0;
+        List<String> errors = new ArrayList<>();
+        try {
+            List<Map<String, Object>> items = objectMapper.readValue(file.getInputStream(), new TypeReference<>() {});
+            ObjectMapper lenient = objectMapper.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            for (Map<String, Object> item : items) {
+                try {
+                    item.remove("id");
+                    DTO dto = lenient.convertValue(item, dtoClass);
+                    T entity = (T) mapper.map(dto);
+                    entity.setModificationDate(LocalDateTime.now());
+                    service.save(entity);
+                    imported++;
+                } catch (Exception e) {
+                    errors.add(e.getMessage());
+                }
+            }
+            return ResponseEntity.ok(new ImportResult(imported, errors.size(), errors));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ImportResult(0, 0, List.of("Parse error: " + e.getMessage())));
+        }
+    }
+
     record ValidationErrorResponse(List<EntityConfigValidator.FieldError> errors) {
+    }
+
+    public record ImportResult(int imported, int skipped, List<String> errors) {
     }
 }
