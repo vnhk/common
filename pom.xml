@@ -11,9 +11,9 @@
     </parent>
 
     <groupId>com.bervan</groupId>
-    <artifactId>common-vaadin</artifactId>
+    <artifactId>common</artifactId>
     <version>latest</version>
-    <name>common-vaadin</name>
+    <name>common</name>
     <packaging>jar</packaging>
 
     <properties>

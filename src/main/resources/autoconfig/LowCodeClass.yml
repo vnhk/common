@@ -6,7 +6,6 @@ columns:
     inEditForm: true
     inTable: true
     required: true
-    extension: "VaadinDynamicDropdownBervanColumn"
 
   - field: packageName
     displayName: "Package Name"
@@ -63,7 +62,6 @@ columns:
     inEditForm: true
     inTable: true
     required: true
-    extension: "VaadinLowCodeClassDetailsColumn"
 
 
 
