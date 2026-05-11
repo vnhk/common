@@ -1,7 +1,6 @@
 package com.bervan.common.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -21,7 +20,7 @@ public class OpenAIService implements AIService {
     }
 
     public String askAI(String prompt, String model, double temperature, String apiKey) {
-        if (Strings.isNullOrEmpty(apiKey)) {
+        if (apiKey == null || apiKey.isBlank()) {
             return null;
         }
 
