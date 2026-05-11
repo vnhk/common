@@ -16,4 +16,4 @@ RUN mvn install -DskipTests -U
 
 FROM maven:3.8.5-openjdk-17
 
-COPY --from=builder /app/target/common-vaadin.jar /app/common-vaadin.jar
+COPY --from=builder /app/target/common.jar /app/common.jar
