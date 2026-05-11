@@ -380,9 +380,12 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
         return value;
     }
 
-    protected <DTO extends BaseDTO<ID>> ResponseEntity<byte[]> exportAll(Class<DTO> dtoClass, String filenamePrefix) {
+    protected <DTO extends BaseDTO<ID>> ResponseEntity<byte[]> exportAll(
+            MultiValueMap<String, String> allParams, Class<DTO> dtoClass,
+            String filenamePrefix, Class<?> entityClass) {
         try {
-            Set<T> all = service.load(PageRequest.of(0, 100_000));
+            SearchRequest request = buildSearchRequest(allParams, entityClass);
+            Set<T> all = service.load(request, PageRequest.of(0, 100_000));
             List<DTO> dtos = all.stream().map(e -> mapper.map(e, dtoClass)).toList();
             byte[] data = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(dtos);
             String filename = filenamePrefix + "-export-" + LocalDate.now() + ".json";
