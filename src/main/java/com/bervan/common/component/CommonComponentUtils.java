@@ -12,6 +12,7 @@ import java.util.*;
 
 import static com.bervan.common.TableClassUtils.buildColumnConfig;
 
+@Deprecated
 public class CommonComponentUtils {
     public static final List<ComponentForFieldBuilder> componentBuilders = new ArrayList<>(Arrays.asList(
             JsonLogFieldBuilder.getInstance(),

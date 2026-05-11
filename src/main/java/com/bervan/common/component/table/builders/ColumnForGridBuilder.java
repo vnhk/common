@@ -7,6 +7,7 @@ import com.vaadin.flow.data.renderer.Renderer;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
+@Deprecated
 public interface ColumnForGridBuilder {
     <ID extends Serializable, T extends PersistableTableData<ID>> Renderer<T> build(Field field, ClassViewAutoConfigColumn config);
 

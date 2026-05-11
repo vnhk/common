@@ -14,6 +14,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
+@Deprecated
 public class TextColumnGridBuilder implements ColumnForGridBuilder {
     private static final TextColumnGridBuilder INSTANCE = new TextColumnGridBuilder();
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "common");

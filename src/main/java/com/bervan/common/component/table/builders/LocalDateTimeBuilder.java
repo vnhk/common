@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
+@Deprecated
 public class LocalDateTimeBuilder implements ColumnForGridBuilder {
     private static final LocalDateTimeBuilder INSTANCE = new LocalDateTimeBuilder();
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "common");

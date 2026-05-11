@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Deprecated
 public class BervanDynamicMultiDropdownController extends VerticalLayout implements AutoConfigurableField<List<String>> {
     public final String key;
     private final MultiSelectComboBox<String> multiSelectComboBox;

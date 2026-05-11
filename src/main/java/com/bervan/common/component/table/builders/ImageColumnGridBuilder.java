@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
+@Deprecated
 public class ImageColumnGridBuilder implements ColumnForGridBuilder {
     private static final ImageColumnGridBuilder INSTANCE = new ImageColumnGridBuilder();
     private final JsonLogger log = JsonLogger.getLogger(getClass(), "common");
