@@ -422,10 +422,4 @@ public abstract class BaseOwnedController<T extends BervanOwnedBaseEntity<ID> & 
             return ResponseEntity.badRequest().body(new ImportResult(0, 0, List.of("Parse error: " + e.getMessage())));
         }
     }
-
-    record ValidationErrorResponse(List<EntityConfigValidator.FieldError> errors) {
-    }
-
-    public record ImportResult(int imported, int skipped, List<String> errors) {
-    }
 }
