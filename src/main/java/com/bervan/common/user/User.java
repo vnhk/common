@@ -159,16 +159,25 @@ public class User extends BervanOwnedBaseEntity<UUID> implements PersistableTabl
         this.childrenRelations = userRelations;
     }
 
+    /**
+     * Identity by {@link #id} only. Do not include collections or associations — Hibernate calls
+     * hashCode/equals while loading persistent collections; touching lazy/eager sets here causes
+     * {@code AssertionFailure: force initializing collection loading}.
+     */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User user)) return false;
-        return mainAccount == user.mainAccount && Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(role, user.role) && Objects.equals(deleted, user.deleted) && Objects.equals(modificationDate, user.modificationDate) && Objects.equals(childrenRelations, user.childrenRelations);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof User user)) {
+            return false;
+        }
+        return id != null && id.equals(user.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, password, role, mainAccount, deleted, modificationDate, childrenRelations);
+        return id != null ? id.hashCode() : System.identityHashCode(this);
     }
 
     public String getDataCipherPassword() {
