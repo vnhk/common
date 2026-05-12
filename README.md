@@ -35,7 +35,7 @@ The React `DynamicForm` and `buildColumnsFromConfig` consume `GET /api/config`.
 
 - `BervanBaseRepositoryImpl.save()` auto-generates UUID — entities persisted via JPA `CASCADE` must set `id` manually
 - `BaseOwnedController` only works for `BervanOwnedBaseEntity`; plain entities need plain REST controllers
-- Spring Boot parent: `3.0.4`
+- Spring Boot parent: `3.2.8`
 - Key dependencies: Spring Security, Spring Data JPA, Spring AMQP, Apache POI, Logback, Jackson YAML
 
 ## Build

@@ -54,5 +54,5 @@ fields:
 ## Important Notes
 1. `BervanBaseRepositoryImpl.save()` auto-generates UUID — entities persisted via JPA CASCADE must set `id` manually
 2. `BaseOwnedController` uses `@PostFilter` — only works for `BervanOwnedBaseEntity`; entities extending `BervanBaseEntity` need plain REST controllers
-3. `spring-boot-starter-parent` version: 3.0.4
+3. `spring-boot-starter-parent` version: 3.2.8
 4. Dependencies: spring-security, spring-data-jpa, spring-amqp, poi-ooxml, logback, jackson-dataformat-yaml, spring-validation
