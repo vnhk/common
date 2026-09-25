@@ -1,5 +1,6 @@
 package com.bervan.common.service;
 
+import com.bervan.logging.JsonLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -17,6 +18,7 @@ public class OpenAIService implements AIService {
     public static final String GPT_4O_MINI = "gpt-4o-mini";
     public static final String GPT_4O = "gpt-4o";
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+    private static JsonLogger log = JsonLogger.getLogger(OpenAIService.class, "common");
     private final String messageInitialPrompt;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -71,7 +73,7 @@ public class OpenAIService implements AIService {
 
             return messageMap.get("content").toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to process OpenAI request: " + e.getMessage(), e);
             return null;
         }
     }
@@ -126,7 +128,7 @@ public class OpenAIService implements AIService {
 
             return messageMap.get("content").toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to process OpenAI image request: " + e.getMessage(), e);
             return null;
         }
     }
