@@ -39,7 +39,7 @@ public interface LogRepository extends BaseRepository<LogEntity, Long> {
     @Query("SELECT DISTINCT moduleName FROM LogEntity")
     List<String> findAllModulesNames();
 
-    @Query("SELECT l FROM LogEntity l WHERE l.applicationName = :appName " +
+    @Query("SELECT l FROM LogEntity l WHERE (:appName IS NULL OR :appName = '' OR l.applicationName = :appName) " +
            "AND (:fromTime IS NULL OR l.timestamp >= :fromTime) " +
            "AND (:toTime IS NULL OR l.timestamp <= :toTime) " +
            "AND (:logLevel IS NULL OR l.logLevel = :logLevel) " +
@@ -54,7 +54,7 @@ public interface LogRepository extends BaseRepository<LogEntity, Long> {
             @Param("moduleName") String moduleName,
             Pageable pageable);
 
-    @Query("SELECT l FROM LogEntity l WHERE l.applicationName = :appName " +
+    @Query("SELECT l FROM LogEntity l WHERE (:appName IS NULL OR :appName = '' OR l.applicationName = :appName) " +
            "AND (:processName IS NULL OR l.processName = :processName) " +
            "AND (:moduleName IS NULL OR l.moduleName = :moduleName) " +
            "AND (:className IS NULL OR LOWER(l.className) LIKE LOWER(CONCAT('%', :className, '%'))) " +
@@ -69,7 +69,7 @@ public interface LogRepository extends BaseRepository<LogEntity, Long> {
             @Param("message") String message,
             Pageable pageable);
 
-    @Query("SELECT l FROM LogEntity l WHERE l.applicationName = :appName " +
+    @Query("SELECT l FROM LogEntity l WHERE (:appName IS NULL OR :appName = '' OR l.applicationName = :appName) " +
            "AND (:fromTime IS NULL OR l.timestamp >= :fromTime) " +
            "AND (:toTime IS NULL OR l.timestamp <= :toTime) " +
            "AND (:logLevel IS NULL OR l.logLevel = :logLevel) " +

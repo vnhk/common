@@ -6,13 +6,12 @@ import com.bervan.common.search.model.SearchResponse;
 import com.bervan.common.search.model.SortDirection;
 import com.bervan.history.model.AbstractBaseEntity;
 import com.bervan.history.model.Persistable;
+import com.bervan.logging.JsonLogger;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.*;
 import org.hibernate.Hibernate;
 import org.hibernate.internal.util.StringHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ import static com.bervan.common.search.SearchRequest.FINAL_GROUP_CONSTANT;
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class SearchService {
-    private final Logger log = LoggerFactory.getLogger(SearchService.class);
+    private final JsonLogger log = JsonLogger.getLogger(SearchService.class, "common");
     @PersistenceContext
     protected EntityManager entityManager;
     protected CriteriaBuilder criteriaBuilder;

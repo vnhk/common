@@ -1,11 +1,10 @@
 package com.bervan.common.service;
 
+import com.bervan.logging.JsonLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import net.coobird.thumbnailator.Thumbnails;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,7 +12,7 @@ import java.io.IOException;
 import java.util.Base64;
 
 public class BaseScanningService {
-    private static final Logger log = LoggerFactory.getLogger(BaseScanningService.class);
+    private static final JsonLogger log = JsonLogger.getLogger(BaseScanningService.class, "common");
     private final OpenAIService openAIService;
     protected final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())

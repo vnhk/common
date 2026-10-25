@@ -6,6 +6,7 @@ import com.bervan.common.mapper.BervanDTOMapper;
 import com.bervan.logging.LogEntity;
 import com.bervan.logging.LogRepository;
 import com.bervan.logging.LogService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ public class LogRestController extends BaseController<LogEntity, Long> {
 
     private final LogService logService;
     private final LogRepository logRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public LogRestController(LogService logService, LogRepository logRepository, BervanDTOMapper mapper, EntityConfigValidator validator) {
         super(logService, mapper, validator, "LogEntity");
@@ -94,46 +96,78 @@ public class LogRestController extends BaseController<LogEntity, Long> {
 
     @GetMapping("/export")
     public ResponseEntity<String> exportLogs(
-            @RequestParam String appName,
+            @RequestParam(required = false) String appName,
             @RequestParam(required = false) String fromTime,
             @RequestParam(required = false) String toTime,
+            @RequestParam(required = false) String timestamp_from,
+            @RequestParam(required = false) String timestamp_to,
             @RequestParam(required = false) String logLevel,
             @RequestParam(required = false) String processName,
             @RequestParam(required = false) String moduleName
     ) {
+        LocalDateTime from = parseDateTime(fromTime != null ? fromTime : timestamp_from);
+        LocalDateTime to = parseDateTime(toTime != null ? toTime : timestamp_to);
+
         List<LogEntity> logs = logRepository.findAllForExport(
-                appName,
-                fromTime != null ? LocalDateTime.parse(fromTime) : null,
-                toTime != null ? LocalDateTime.parse(toTime) : null,
+                blankToNull(appName),
+                from,
+                to,
                 blankToNull(logLevel),
                 blankToNull(processName),
                 blankToNull(moduleName)
         );
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         StringBuilder sb = new StringBuilder();
+        sb.append("[\n");
+        boolean first = true;
         for (LogEntity log : logs) {
-            if (log.getJson() != null && !log.getJson().isEmpty()) {
-                sb.append(log.getJson()).append("\n");
+            String jsonEntry = null;
+            if (log.getJson() != null && !log.getJson().isBlank()) {
+                jsonEntry = log.getJson().trim();
             } else {
-                sb.append(String.format("[%s] [%s] [%s.%s:%d] %s\n",
-                        log.getTimestamp() != null ? log.getTimestamp().format(formatter) : "N/A",
-                        log.getLogLevel() != null ? log.getLogLevel() : "N/A",
-                        log.getClassName() != null ? log.getClassName() : "N/A",
-                        log.getMethodName() != null ? log.getMethodName() : "N/A",
-                        log.getLineNumber(),
-                        log.getMessage() != null ? log.getMessage() : "N/A"));
+                try {
+                    jsonEntry = objectMapper.writeValueAsString(toDto(log));
+                } catch (Exception ignored) {
+                }
+            }
+            if (jsonEntry != null && !jsonEntry.isBlank()) {
+                if (!first) {
+                    sb.append(",\n");
+                }
+                sb.append("  ").append(jsonEntry);
+                first = false;
             }
         }
+        sb.append("\n]");
 
-        String filename = String.format("logs_%s_%s.txt",
-                appName.replaceAll("[^a-zA-Z0-9]", "_"),
+        String namePart = (appName != null && !appName.isBlank())
+                ? appName.replaceAll("[^a-zA-Z0-9]", "_")
+                : "all";
+        String filename = String.format("logs_%s_%s.json",
+                namePart,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.TEXT_PLAIN)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(sb.toString());
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(value);
+        } catch (Exception e) {
+            try {
+                return LocalDateTime.parse(value.replace(" ", "T"));
+            } catch (Exception ex) {
+                try {
+                    return java.time.LocalDate.parse(value).atStartOfDay();
+                } catch (Exception ex2) {
+                    return null;
+                }
+            }
+        }
     }
 
     private LogDto toDto(LogEntity e) {
